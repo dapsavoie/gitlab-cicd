@@ -1,24 +1,30 @@
-stages:
-  - build
-
-variables:
-  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-
-build-push-docker-image:
-  stage: build
-  # Specify a Docker image to run the job in.
-  image: docker:dind
-  # Specify an additional image 'docker:dind' ("Docker-in-Docker") that
-  # will start up the Docker daemon when it is brought up by a runner.
-  services:
-    - docker:dind
-  # docker login steps  
+build-job:
+  stage: build 
   script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY 
-    - docker build -t $IMAGE_TAG .
-    - docker push $IMAGE_TAG
-    - echo $CI_REGISTRY:$IMAGE_TAG
+    - echo "builds some image"
   rules:   
     - when: always
 
+###comments for testing
+deploy-qa:
+  stage: deploy
+  script: 
+    - echo "deploys automatically when changes are pushed to any branch"
+  rules:   
+    - when: always
+    
+deploy-stag:
+  stage: deploy
+  script:
+    - echo "this deploys when a merge request is created"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: $CI_COMMIT_BRANCH == "main"
+
+deploy-prod:
+  stage: deploy
+  script:
+    - echo "deploys to prod when main branch is tagged"
+  only:
+    - tags
 
